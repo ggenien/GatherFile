@@ -1,5 +1,6 @@
 # GatherFile
 gather files from a directory tree, copy and rename the files into new directory, useful for AI training photos  
+I have tested it in windows. And it should work in linux also.  
 
 usage: gatherfile targetDir sourceDir +filenameContain -filenameWithout  
 
