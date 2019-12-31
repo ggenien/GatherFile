@@ -1,5 +1,6 @@
 // gatherfile_main
 // by ggenien@163.com
+// compiled with GO 1.12.7
 package main
 
 import (
@@ -14,19 +15,24 @@ import (
 const (
 	c_contain = "+"
 	c_without = "-"
+	c_sep     = string(os.PathSeparator) //path separator
+	c_usage   = "usage: gatherfile <targetDir> <sourceDir> [/c] [+filenameContain] [-filenameWithout]\n" +
+		"       /c: use if you need case sensitive, default is not sensitive\n" +
+		"       +filenameContain: gather filename which contain a string, can be used multiple times\n" +
+		"       +filenameWithout: gather filename which not contain a string, can be used multiple times"
 )
 
 var (
 	target_dir                         string   //target dir
 	filename_contain, filename_without []string //filename contain or without
-	count                              int      //files count, for rename
+	case_sensitive                     bool     //case sensitive of filename_contain and filename_without
 
-	c_sep = string(os.PathSeparator) //path separator
+	count int //files count, for rename
 )
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("gatherfile targetDir sourceDir +filenameContain -filenameWithout")
+		fmt.Println(c_usage)
 		return
 	}
 
@@ -39,6 +45,7 @@ func main() {
 		source_dir = strings.TrimSuffix(source_dir, c_sep)
 	}
 
+	case_sensitive = false
 	filename_contain = make([]string, 0, 10)
 	filename_without = make([]string, 0, 10)
 	count = 0
@@ -51,6 +58,8 @@ func main() {
 			filename_contain = append(filename_contain, p[1:])
 		} else if strings.HasPrefix(p, "-") && (len(p) > len(c_without)) {
 			filename_without = append(filename_without, p[1:])
+		} else if strings.ToLower(p) == "/c" {
+			case_sensitive = true
 		} else {
 			fmt.Println("parameter should begin with + or -:", p)
 			wrong = true
@@ -58,6 +67,15 @@ func main() {
 	}
 	if wrong {
 		return
+	}
+
+	if !case_sensitive {
+		for i := range filename_contain {
+			filename_contain[i] = strings.ToLower(filename_contain[i])
+		}
+		for i := range filename_without {
+			filename_without[i] = strings.ToLower(filename_without[i])
+		}
 	}
 
 	if f_create_multi_path(target_dir) {
@@ -80,16 +98,20 @@ func f_deal_path(the_path string) {
 		if files[i].IsDir() {
 			f_deal_path(the_path + c_sep + fn)
 		} else {
-			for i := range filename_contain {
-				if !strings.Contains(fn, filename_contain[i]) {
-					goto l_next_file
-				}
+			var fn2 string
+			if case_sensitive {
+				fn2 = fn
+			} else {
+				fn2 = strings.ToLower(fn)
 			}
-			for i := range filename_without {
-				if strings.Contains(fn, filename_without[i]) {
-					goto l_next_file
-				}
+
+			if !f_check_filename(fn2, true) {
+				goto l_next_file
 			}
+			if !f_check_filename(fn2, false) {
+				goto l_next_file
+			}
+
 			count++
 			fmt.Printf("%08d %s\n", count, fn)
 			tar_fn := target_dir + c_sep + fmt.Sprintf("%08d%s", count, path.Ext(fn))
@@ -100,6 +122,26 @@ func f_deal_path(the_path string) {
 	}
 }
 
+//
+func f_check_filename(file_name string, check_contain bool) bool {
+	var list *[]string
+	if check_contain {
+		list = &filename_contain
+	} else {
+		list = &filename_without
+	}
+
+	for i := range *list {
+		ls := (*list)[i]
+		if strings.Contains(file_name, ls) == !check_contain {
+			return false
+		}
+	}
+
+	return true
+}
+
+// create multi path
 func f_create_multi_path(the_path string) bool {
 	dirs := strings.Split(the_path, c_sep)
 	if len(dirs) <= 0 {
