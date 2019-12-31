@@ -122,7 +122,7 @@ func f_deal_path(the_path string) {
 	}
 }
 
-//
+// check if a filename meet the requirements
 func f_check_filename(file_name string, check_contain bool) bool {
 	var list *[]string
 	if check_contain {
@@ -133,7 +133,7 @@ func f_check_filename(file_name string, check_contain bool) bool {
 
 	for i := range *list {
 		ls := (*list)[i]
-		if strings.Contains(file_name, ls) == !check_contain {
+		if strings.Contains(file_name, ls) != check_contain {
 			return false
 		}
 	}
