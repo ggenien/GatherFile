@@ -11,7 +11,7 @@ I have tested it in windows 10 x64, and CentOS 7.4 x64.
     gatherfile  targetDir   sourceDir  [/c] [+filenameContain] [-filenameWithout]
        /c: use if you need case sensitive, default is not sensitive
        +filenameContain: gather filename which contain a string, can be used multiple times
-       +filenameWithout: gather filename which not contain a string, can be used multiple times
+       -filenameWithout: gather filename which not contain a string, can be used multiple times
 
 **example:**
 
