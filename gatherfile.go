@@ -19,7 +19,11 @@ const (
 	c_usage   = "usage: gatherfile <targetDir> <sourceDir> [/c] [+filenameContain] [-filenameWithout]\n" +
 		"       /c: use if you need case sensitive, default is not sensitive\n" +
 		"       +filenameContain: gather filename which contain a string, can be used multiple times\n" +
-		"       -filenameWithout: gather filename which not contain a string, can be used multiple times"
+		"       -filenameWithout: gather filename which not contain a string, can be used multiple times\n" +
+		"example:\n" +
+		"       gatherfile d:\\cars\\train\\type1 d:\\original +car +.jpg -sport\n" +
+		"       gatherfile . d:\\original\n" +
+		"       ./gatherfile xyz data +.log"
 )
 
 var (
